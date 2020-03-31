@@ -1,4 +1,4 @@
-const port = 3002;
+const port = 8080;
 
 var express = require('express'),
     app = express();
@@ -15,9 +15,9 @@ const storage = new Storage({
 });
 
 
-app.use('/qrcode', express.static(process.cwd() + '/qrcode'));
+//app.use('/qrcode', express.static(process.cwd() + '/qrcode'));
 
-app.use(express.static(__dirname + '/public'));
+//app.use(express.static(__dirname + '/public'));
 
 app.use(bodyParser.urlencoded({
    extended: true
@@ -76,4 +76,4 @@ app.post('/',function(req,res){
     //return  res.json({'qrCodeURL':file});
 });
 
-app.listen();
+app.listen(port);
