@@ -49,7 +49,8 @@ app.post('/',function(req,res){
       console.log('File created');
   });
     res.json({'qrCodeURL':requrl+filename+'.png'});*/
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
    var image = req.body[0].data,
     mimeType = image.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1],
     fileName =  makeid(7)+ mimeTypes.detectExtension(mimeType),
