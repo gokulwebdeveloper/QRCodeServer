@@ -76,4 +76,4 @@ app.post('/',function(req,res){
     //return  res.json({'qrCodeURL':file});
 });
 
-app.listen(port);
+app.listen();
