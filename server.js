@@ -78,7 +78,7 @@ app.post('/',function(req,res){
     res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     //console.log(req.body.data);
     var image = buffer.from(JSON.stringify(req.body.data)).toString('base64');
-    var qr_png = qr.imageSync(image,{ type: 'png',size: 4})
+    var qr_png = qr.imageSync(image,{ type: 'png',size: 2})
     // Generate a random file name 
     let qr_code_file_name = new Date().getTime() + '.png';
 
