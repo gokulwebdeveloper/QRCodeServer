@@ -3,9 +3,11 @@ const port = 8080;
 var express = require('express'),
     app = express();
 const cors = require('cors');
+const qr = require('qr-image');
 var fs = require('fs');
 var url = require('url');
-app.use(cors())    
+var buffer = require('buffer/').Buffer;
+app.use(cors());    
 var bodyParser = require('body-parser');
 var mimeTypes = require('mimetypes');
 const {Storage} = require('@google-cloud/storage');
@@ -15,17 +17,22 @@ const storage = new Storage({
 });
 
 
-//app.use('/qrcode', express.static(process.cwd() + '/qrcode'));
+app.use('/qrcode', express.static(process.cwd() + '/qrcode'));
+app.use('/auto-zone', express.static(process.cwd() + '/auto-zone'));
 
-//app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public'));
 
 app.use(bodyParser.urlencoded({
    extended: true
 }));
+
+app.get('/auto-zone', (req, res) => {
+    res.sendFile('./auto-zone', { root: __dirname });
+});
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8888');
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -69,19 +76,21 @@ app.post('/',function(req,res){
     res.json({'qrCodeURL':requrl+filename+'.png'});*/
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-   var image = req.body[0].data,
-    mimeType = image.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1],
-    fileName =  makeid(7)+ mimeTypes.detectExtension(mimeType),
-    base64EncodedImageString = image.replace(/^data:image\/\w+;base64,/, ''),
-    imageBuffer = new Buffer(base64EncodedImageString, 'base64');
+    //console.log(req.body.data);
+    var image = buffer.from(JSON.stringify(req.body.data)).toString('base64');
+    var qr_png = qr.imageSync(image,{ type: 'png',size: 4})
+    // Generate a random file name 
+    let qr_code_file_name = new Date().getTime() + '.png';
+
+
 
     bucket = storage.bucket('qrgenerator');
 
       // Upload the image to the bucket
-      var file = bucket.file('qrcode/' + fileName);
+      var file = bucket.file('qrcode/' + qr_code_file_name);
 
-    file.save(imageBuffer, {
-            metadata: { contentType: mimeType },
+    file.save(qr_png, {
+            metadata: { contentType: 'png' },
             public: true,
             validation: 'md5'
         }, function(error) {
@@ -89,7 +98,7 @@ app.post('/',function(req,res){
             if (error) {
                 return res.serverError('Unable to upload the image.');
             }
-           const publicUrl = `https://storage.googleapis.com/${bucket.name}/qrcode/${fileName}`;
+           const publicUrl = `https://storage.googleapis.com/${bucket.name}/qrcode/${qr_code_file_name}`;
             return res.json({'qrCodeURL': publicUrl});
         });
     //return  res.json({'qrCodeURL':file});
